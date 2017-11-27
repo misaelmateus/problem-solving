@@ -4,12 +4,12 @@ import os
 import time
 handle = raw_input("Type your handle : ")
 
-for i in range(7, 63):
+for i in range(1, 63):
 	print 'grabbing data'
 	gen_url = 'http://codeforces.com/submissions/'+handle+'/page/' + str(i)
 	print gen_url
 	r = urllib2.urlopen(gen_url)
-	time.sleep(1)
+	time.sleep(3)
 	print 'done'
 
 	problem_id = []
@@ -36,7 +36,7 @@ for i in range(7, 63):
 			continue
 		print url
 		r = urllib2.urlopen(url)
-		time.sleep(1)
+		time.sleep(3)
 		soup = BeautifulSoup(r)
 		var = soup.find_all('td')
 		var1 = soup.find('div', attrs={"style" : "background-color: white;margin:0.3em 3px 0 3px;position:relative;"}).find_all('td')
@@ -49,7 +49,11 @@ for i in range(7, 63):
 		target.write("//   Author : Misael Mateus \n")
 		target.write("//   Submission date: " + var1[8].text + "\n")
 		for row in range(0,len(co)):
+			flag = 0
 			for row in co[row].find_all('pre',attrs={"class" : "prettyprint lang-cpp program-source"}):
 				target.write(row.text)
+				flag = 1
+			if flag == 1: 
+				break
 		print 'got code '+contest_id[j]+'-'+problem_name
 		target.close()	
