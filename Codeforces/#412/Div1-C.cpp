@@ -21,7 +21,7 @@ int calc(int i, int j, int min_k, int max_k){
 	return opt;
 }
 
-// Divide and Conquer optimization of dp
+// Divide and Conquer optimization of dynamic programming
 void sol(int min_N, int max_N, int K, int min_i,int max_i){
 	if(max_N < min_N)
 		return;
