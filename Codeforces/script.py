@@ -4,7 +4,7 @@ import os
 import time
 handle = raw_input("Type your handle : ")
 
-for i in range(1, 63):
+for i in range(42, 63):
 	print 'grabbing data'
 	gen_url = 'http://codeforces.com/submissions/'+handle+'/page/' + str(i)
 	print gen_url
