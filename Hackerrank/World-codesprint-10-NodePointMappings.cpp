@@ -20,6 +20,7 @@ bool comp1(const PT &a, const PT &b){
 	return a.x < b.x;
 }
 bool comp2(const PT &a, const PT &b){
+
 	return (bool)((ll)(a.y - y0)*(ll)(b.x - x0) > (ll)(b.y - y0)*(ll)(a.x - x0));
 }
 
