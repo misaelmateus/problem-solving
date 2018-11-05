@@ -11,13 +11,13 @@ struct pt {
 	bool operator==(pt a, pt b) {return a.x == b.x && a.y == b.y;}
 	bool operator!=(pt a, pt b) {return !(a == b);}
 
-	T sq(pt p) {return p.x*p.x + p.y*p.y;}
-	double abs(pt p) {return sqrt(sq(p));}
 
 	ostream& operator<<(ostream& os, pt p) {
 		return os << "("<< p.x << "," << p.y << ")";
 	}
 };
+T sq(pt p) {return p.x*p.x + p.y*p.y;}
+double abs(pt p) {return sqrt(sq(p));}
 
 // rotate 90º
 pt perp(pt p) {return {-p.y, p.x};}
@@ -89,6 +89,7 @@ struct line {
 	
 	// - these work with T = int
 	
+	
 	// positive if in the left side and negative if in the right side
 	T side(pt p) {return cross(v,p)-c;}
 	double dist(pt p) {return abs(side(p)) / abs(v);}
@@ -125,11 +126,98 @@ line bisector(line l1, line l2, bool interior) {
 			l2.c/abs(l2.v) + l1.c/abs(l1.v) * sign};
 }
 
+// return if point is in a disk of diameter a,b ( p != a, b)
+bool inDisk(pt a, pt b, pt p) {
+	return dot(a-p, b-p) <= 0;
+}
+
+// if p is in segment (a, b)
+bool onSegment(pt a, pt b, pt p) {
+	return (p == a || p == b) || orient(a,b,p) == 0 && inDisk(a,b,p);
+}
+
+// if has intersection with only one point
+bool properInter(pt a, pt b, pt c, pt d, pt &out) {
+	double oa = orient(c,d,a),
+	ob = orient(c,d,b),
+	oc = orient(a,b,c),
+	od = orient(a,b,d);
+	// Proper intersection exists iff opposite signs
+	if (oa*ob < 0 && oc*od < 0) {
+		out = (a*ob - b*oa) / (ob-oa);
+		return true;
+	}
+	return false;
+}
+
+// To create sets of points we need a comparison function
+struct cmpX {
+	bool operator()(pt a, pt b) {
+		return make_pair(a.x, a.y) < make_pair(b.x, b.y);
+	}
+};
+// create set with intersection : 1 point if has one intersection, 2 points if there is a segment
+set<pt,cmpX> inters(pt a, pt b, pt c, pt d) {
+	pt out;
+	if (properInter(a,b,c,d,out)) return {out};
+	set<pt,cmpX> s;
+	if (onSegment(c,d,a)) s.insert(a);
+	if (onSegment(c,d,b)) s.insert(b);
+	if (onSegment(a,b,c)) s.insert(c);
+	if (onSegment(a,b,d)) s.insert(d);
+	return s;
+}
+
+// dist seg to point
+double segPoint(pt a, pt b, pt p) {
+	if (a != b) {
+		line l(a,b);
+		if (l.cmpProj(a,p) && l.cmpProj(p,b)) // if closest to projection
+			return l.dist(p); // output distance toline
+	}
+	return min(abs(p-a), abs(p-b)); // otherwise distance to A or B
+}
+
+// dist segment to segment
+double segSeg(pt a, pt b, pt c, pt d) {
+	pt dummy;
+	if (properInter(a,b,c,d,dummy))
+		return 0;
+	return min({segPoint(a,b,c), segPoint(a,b,d), segPoint(c,d,a), segPoint(c,d,b)});
+}
 
 
+double areaTriangle(pt a, pt b, pt c) {
+	return abs(cross(b-a, c-a)) / 2.0;
+}
+double areaPolygon(vector<pt> p) {
+	double area = 0.0;
+	for (int i = 0, n = p.size(); i < n; i++) {
+		area += cross(p[i], p[(i+1)%n]); // wrap back to 0 if i == n-1
+	}
+	return abs(area) / 2.0;
+}
 
+
+// true if P at least as high as A (blue part)
+bool above(pt a, pt p) {
+	return p.y >= a.y;
+}
+// check if [PQ] crosses ray from A
+bool crossesRay(pt a, pt p, pt q) {
+	return (above(a,q) - above(a,p)) * orient(a,p,q) > 0;
+}
+// if strict, returns false when A is on the boundary
+bool inPolygon(vector<pt> p, pt a, bool strict = true) {
+	int numCrossings = 0;
+	for (int i = 0, n = p.size(); i < n; i++) {
+		if (onSegment(p[i], p[(i+1)%n], a))
+			return !strict;
+		numCrossings += crossesRay(a, p[i], p[(i+1)%n]);
+	}
+	return numCrossings & 1; // inside if odd number of crossings
+}
 int main(){
-
 
 	return 0;
 }
